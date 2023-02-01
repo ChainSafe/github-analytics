@@ -3,6 +3,7 @@ import { PullRequest } from "./entity";
 import { uniq } from "underscore";
 import { median as _median } from "mathjs";
 import { fetchAllMergedPullRequests } from "./github";
+import humanDuration from "humanize-duration";
 
 interface StatCommandOptions {
   input: string | undefined;
@@ -38,6 +39,8 @@ interface PullRequestStat {
   timeToMergeSecondsMedian: number;
   timeToMergeFromFirstReviewSecondsAverage: number;
   timeToMergeFromFirstReviewSecondsMedian: number;
+  responseTimeAverage: string;
+  responseTimeMedian: string;
 }
 export function createStat(prs: PullRequest[]): PullRequestStat {
   const leadTimes = prs.map((pr) => pr.leadTimeSeconds);
@@ -45,6 +48,7 @@ export function createStat(prs: PullRequest[]): PullRequestStat {
   const timeToMergeFromFirstReviews = prs
     .map((pr) => pr.timeToMergeFromFirstReviewSeconds)
     .filter((x): x is number => x !== undefined);
+  const responseTimes = prs.map((pr) => pr.responseTimeSeconds).filter((x): x is number => x !== undefined);
 
   return {
     count: prs.length,
@@ -59,6 +63,8 @@ export function createStat(prs: PullRequest[]): PullRequestStat {
     timeToMergeSecondsMedian: Math.floor(median(timeToMerges)),
     timeToMergeFromFirstReviewSecondsAverage: Math.floor(average(timeToMergeFromFirstReviews)),
     timeToMergeFromFirstReviewSecondsMedian: Math.floor(median(timeToMergeFromFirstReviews)),
+    responseTimeAverage: humanDuration(Math.floor(average(responseTimes)) * 1000),
+    responseTimeMedian: humanDuration(Math.floor(median(responseTimes)) * 1000),
   };
 }
 
