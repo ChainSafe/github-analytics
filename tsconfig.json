@@ -4,7 +4,7 @@
     "target": "es2020",
     "module": "commonjs",
     "lib": ["es2020"],
-
+    "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
 

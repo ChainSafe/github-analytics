@@ -43,7 +43,6 @@ interface PullRequestStat {
   responseTimeMedian: string;
 }
 export function createStat(prs: PullRequest[]): PullRequestStat {
-  console.log(prs);
   const leadTimes = prs.map((pr) => pr.leadTimeSeconds);
   const timeToMerges = prs.map((pr) => pr.timeToMergeSeconds);
   const timeToMergeFromFirstReviews = prs
