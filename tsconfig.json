@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "incremental": true,
-    "target": "es2020",
+    "target": "es2021",
+    "outDir": "dist",
     "module": "commonjs",
-    "lib": ["es2020"],
+    "lib": ["es2021"],
     "sourceMap": true,
     "strict": true,
     "noImplicitReturns": true /* Report error when not all code paths in function return a value. */,
@@ -11,5 +11,7 @@
     "esModuleInterop": true,
 
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
-  }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

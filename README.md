@@ -1,16 +1,24 @@
-# merged-pr-stat
-This is a tool to creates merged PullRequest statistics.  It is useful to measure the productivity and health of your team.
+# Github Analytics
+This is a tool to collect various Gtihub Analytics not currently tracked by GithHub. 
+Some of the things you could analyze are response times (time till first comment/review) for new issues and pull requests, the time required to merge PRs, and statistics on community-opened issues and pull requests.
+It is useful to measure the productivity and health of your team as well as community support and usage.
+
+
+Many thanks to `shibayu36` who created the initial implementation for pull request stats.
 
 ## Installation
-```
-$ npm install -g shibayu36/merged-pr-stat
+
+```bash
+npm install -g @chainsafe/github-analytics
+yarn global add @chainsafe/github-analytics
 ```
 
 ## Usage
-The following command aggregates PullRequests of microsoft/vscode and microsoft/TypesScript which merged between `--start` and `--end`.  You can filter PullRequests by `--query` option.  See also https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests if you want to know what you can specify for `--query`
 
-```
-$ GITHUB_TOKEN=... merged-pr-stat --start=2020-07-01T00:00:00 --end=2020-07-30T23:59:59 --query="repo:microsoft/vscode repo:microsoft/TypeScript"
+The following command aggregates PullRequests of microsoft/vscode and microsoft/TypesScript which merged between `--start` and `--end`.  You can filter PullRequests by `--query` option.  See also <https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests> if you want to know what you can specify for `--query`
+
+```bash
+GITHUB_TOKEN=... ga --start=2020-07-01T00:00:00 --end=2020-07-30T23:59:59 --query="repo:microsoft/vscode repo:microsoft/TypeScript"
 ```
 
 output is
@@ -47,8 +55,7 @@ output is
 
 If you want to know about leadTime and timeToMerge for details, See https://sourcelevel.io/blog/5-metrics-engineering-managers-can-extract-from-pull-requests
 
-
-```
+```bash
 |------------- lead time -------------|
                 |--- time to merge ---|
 ---------------------------------------
@@ -57,18 +64,6 @@ first commit    create PullRequest    merge PullRequest
 ```
 
 ### log command
+
 If you want to get raw information about PullRequests, you can use `log` command.
-
-```
-$ GITHUB_TOKEN=... merged-pr-stat log --start=2020-07-01T00:00:00 --end=2020-07-30T23:59:59 --query="repo:microsoft/vscode repo:microsoft/TypeScript"
-```
-
-Use `--format` option if you need other formats (ex. csv).
-
-## GitHub Enterprise Support
-In case you are using GitHub Enterprise, you can use by setting `GITHUB_ENDPOINT=https://<HOST>/api/graphql`.  
-
-For example 
-```
-$ GITHUB_TOKEN=... GITHUB_ENDPOINT=https://<HOST>/api/graphql merged-pr-stat --start=2020-07-01T00:00:00 --end=2020-07-30T23:59:59 --query="repo:org/repository"
-```
+Use the `--format` option if you need other formats (ex. csv).
