@@ -11,13 +11,13 @@ export class PullRequest {
     public author: string | undefined,
     public url: string,
     public createdAt: string,
-    public mergedAt: string,
+    public mergedAt: string | undefined,
     public additions: number,
     public deletions: number,
     public authoredDate: string,
     public firstReviewedAt: string | undefined
   ) {
-    const mergedAtMillis = parseISO(this.mergedAt).getTime();
+    const mergedAtMillis = this.mergedAt ? parseISO(this.mergedAt).getTime() : new Date().getTime();
     this.responseTimeSeconds = this.firstReviewedAt
       ? (parseISO(this.firstReviewedAt).getTime() - parseISO(this.createdAt).getTime()) / 1000
       : undefined;

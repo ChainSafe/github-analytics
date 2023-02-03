@@ -1,4 +1,4 @@
-import { fetchAllMergedPullRequests } from "./github";
+import { fetchAllPullRequests } from "./github";
 import csvStringify from "csv-stringify/lib/sync";
 
 interface LogCommandOptions {
@@ -8,7 +8,7 @@ interface LogCommandOptions {
   format: string;
 }
 export async function logCommand(options: LogCommandOptions): Promise<void> {
-  const prs = await fetchAllMergedPullRequests(options.query, options.start, options.end);
+  const prs = await fetchAllPullRequests(options.query, options.start, options.end);
 
   if (options.format === "json") {
     process.stdout.write(JSON.stringify(prs, undefined, 2));

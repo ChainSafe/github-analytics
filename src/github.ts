@@ -1,20 +1,14 @@
-import { GraphQLClient, gql } from "graphql-request";
-import { PullRequest } from "./entity";
 import { parseISO } from "date-fns";
+import { Octokit } from "@octokit/core";
+import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
+import { PullRequest } from "./entity";
 
-// GitHub.com https://api.github.com/graphql
-// GitHub Enterprise https://<HOST>/api/graphql
-const GITHUB_GRAPHQL_ENDPOINT = process.env.GITHUB_ENDPOINT || "https://api.github.com/graphql";
+const GITHUB_ENDPOINT = process.env.GITHUB_ENDPOINT || "https://api.github.com";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
-export const graphQLClient = new GraphQLClient(GITHUB_GRAPHQL_ENDPOINT, {
-  headers: {
-    authorization: `Bearer ${GITHUB_TOKEN}`,
-  },
-  timeout: 3600_000,
-});
+const octokit = new (Octokit.plugin(paginateGraphql))({ auth: GITHUB_TOKEN, baseUrl: GITHUB_ENDPOINT });
 
-export async function fetchAllMergedPullRequests(
+export async function fetchAllPullRequests(
   searchQuery: string,
   startDateString?: string,
   endDateString?: string
@@ -22,13 +16,29 @@ export async function fetchAllMergedPullRequests(
   const startDate = startDateString ? parseISO(startDateString).toISOString() : "";
   const endDate = endDateString ? parseISO(endDateString).toISOString() : "";
 
-  let q = `is:pr is:merged ${searchQuery}`;
+  let q = `is:pr ${searchQuery}`;
   if (startDate !== "" || endDate !== "") {
-    q += ` merged:${startDate}..${endDate}`;
+    q += ` created:${startDate}..${endDate}`;
   }
 
-  return fetchAllPullRequestsByQuery(q);
+  return await fetchAllPullRequestsByQuery(q);
 }
+
+// export async function fetchAllIssues(
+//   searchQuery: string,
+//   startDateString?: string,
+//   endDateString?: string
+// ): Promise<PullRequest[]> {
+//   const startDate = startDateString ? parseISO(startDateString).toISOString() : "";
+//   const endDate = endDateString ? parseISO(endDateString).toISOString() : "";
+
+//   let q = `is:issue ${searchQuery}`;
+//   if (startDate !== "" || endDate !== "") {
+//     q += ` created:${startDate}..${endDate}`;
+//   }
+
+//   return fetchAllIssuesByQuery(q);
+// }
 
 interface PullRequestNode {
   title: string;
@@ -37,7 +47,7 @@ interface PullRequestNode {
   } | null;
   url: string;
   createdAt: string;
-  mergedAt: string;
+  mergedAt?: string;
   additions: number;
   deletions: number;
   commits: {
@@ -55,9 +65,9 @@ interface PullRequestNode {
 }
 
 async function fetchAllPullRequestsByQuery(searchQuery: string): Promise<PullRequest[]> {
-  const query = gql`
-    query($after: String) {
-      search(type: ISSUE, first: 100, query: "${searchQuery}", after: $after) {
+  const pageIterator = octokit.graphql.paginate.iterator(
+    `query paginate($cursor: String, $searchQuery: String!) {
+      search(type: ISSUE, first: 100, query: $searchQuery, after: $cursor) {
         issueCount
         nodes {
           ... on PullRequest {
@@ -99,37 +109,26 @@ async function fetchAllPullRequestsByQuery(searchQuery: string): Promise<PullReq
         remaining
         resetAt
       }
-    }
-  `;
-
-  let after: string | undefined;
+    }`,
+    { searchQuery }
+  );
   let prs: PullRequest[] = [];
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    const data = await graphQLClient.request(query, { after });
+  for await (const response of pageIterator) {
     prs = prs.concat(
-      data.search.nodes.map(
-        (p: PullRequestNode) =>
-          new PullRequest(
-            p.title,
-            p.author ? p.author.login : undefined,
-            p.url,
-            p.createdAt,
-            p.mergedAt,
-            p.additions,
-            p.deletions,
-            p.commits.nodes[0].commit.authoredDate,
-            p.reviews.nodes[0] ? p.reviews.nodes[0].createdAt : undefined
-          )
-      )
+      response.search.nodes.map((p: PullRequestNode) => {
+        return new PullRequest(
+          p.title,
+          p.author ? p.author.login : undefined,
+          p.url,
+          p.createdAt,
+          p.mergedAt,
+          p.additions,
+          p.deletions,
+          p.commits.nodes[0].commit.authoredDate,
+          p.reviews.nodes[0] ? p.reviews.nodes[0].createdAt : undefined
+        );
+      })
     );
-
-    if (!data.search.pageInfo.hasNextPage) break;
-
-    // console.error(JSON.stringify(data, undefined, 2));
-
-    after = data.search.pageInfo.endCursor;
   }
-
   return prs;
 }

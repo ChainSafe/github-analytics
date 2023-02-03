@@ -1,8 +1,7 @@
 import fs from "fs";
 import { PullRequest } from "./entity";
-import { uniq } from "underscore";
 import { median as _median } from "mathjs";
-import { fetchAllMergedPullRequests } from "./github";
+import { fetchAllPullRequests } from "./github";
 import humanDuration from "humanize-duration";
 
 interface StatCommandOptions {
@@ -15,7 +14,7 @@ export async function statCommand(options: StatCommandOptions): Promise<void> {
   let prs: PullRequest[] = [];
 
   if (options.query) {
-    prs = await fetchAllMergedPullRequests(options.query, options.start, options.end);
+    prs = await fetchAllPullRequests(options.query, options.start, options.end);
   } else if (options.input) {
     prs = createPullRequestsByLog(options.input);
   } else {
@@ -27,42 +26,41 @@ export async function statCommand(options: StatCommandOptions): Promise<void> {
 }
 
 interface PullRequestStat {
-  count: number;
-  authorCount: number;
-  additionsAverage: number;
-  additionsMedian: number;
-  deletionsAverage: number;
-  deletionsMedian: number;
-  leadTimeSecondsAverage: string;
-  leadTimeSecondsMedian: string;
-  timeToMergeSecondsAverage: string;
-  timeToMergeSecondsMedian: string;
-  timeToMergeFromFirstReviewSecondsAverage: string;
-  timeToMergeFromFirstReviewSecondsMedian: string;
+  count: string;
+  additionsAverage: string;
+  additionsMedian: string;
+  deletionsAverage: string;
+  deletionsMedian: string;
+  leadTimeAverage: string;
+  leadTimeMedian: string;
+  timeToMergeAverage: string;
+  timeToMergeMedian: string;
+  timeToMergeFromFirstReviewAverage: string;
+  timeToMergeFromFirstReviewMedian: string;
   responseTimeAverage: string;
   responseTimeMedian: string;
 }
 export function createStat(prs: PullRequest[]): PullRequestStat {
-  const leadTimes = prs.map((pr) => pr.leadTimeSeconds);
-  const timeToMerges = prs.map((pr) => pr.timeToMergeSeconds);
-  const timeToMergeFromFirstReviews = prs
+  const mergedPrs = prs.filter((pr) => pr.mergedAt != undefined);
+  const leadTimes = mergedPrs.map((pr) => pr.leadTimeSeconds);
+  const timeToMerges = mergedPrs.map((pr) => pr.timeToMergeSeconds);
+  const timeToMergeFromFirstReviews = mergedPrs
     .map((pr) => pr.timeToMergeFromFirstReviewSeconds)
     .filter((x): x is number => x !== undefined);
   const responseTimes = prs.map((pr) => pr.responseTimeSeconds).filter((x): x is number => x !== undefined);
 
   return {
-    count: prs.length,
-    authorCount: uniq(prs.map((pr) => pr.author)).length,
-    additionsAverage: average(prs.map((pr) => pr.additions)),
-    additionsMedian: median(prs.map((pr) => pr.additions)),
-    deletionsAverage: average(prs.map((pr) => pr.deletions)),
-    deletionsMedian: median(prs.map((pr) => pr.deletions)),
-    leadTimeSecondsAverage: humanDuration(Math.floor(average(leadTimes)) * 1000),
-    leadTimeSecondsMedian: humanDuration(Math.floor(median(leadTimes)) * 1000),
-    timeToMergeSecondsAverage: humanDuration(Math.floor(average(timeToMerges)) * 1000),
-    timeToMergeSecondsMedian: humanDuration(Math.floor(median(timeToMerges)) * 1000),
-    timeToMergeFromFirstReviewSecondsAverage: humanDuration(Math.floor(average(timeToMergeFromFirstReviews)) * 1000),
-    timeToMergeFromFirstReviewSecondsMedian: humanDuration(Math.floor(median(timeToMergeFromFirstReviews)) * 1000),
+    count: prs.length + " pull requests",
+    additionsAverage: Math.round(average(prs.map((pr) => pr.additions))) + " lines",
+    additionsMedian: Math.round(median(prs.map((pr) => pr.additions))) + " lines",
+    deletionsAverage: Math.round(average(prs.map((pr) => pr.deletions))) + " lines",
+    deletionsMedian: Math.round(median(prs.map((pr) => pr.deletions))) + " lines",
+    leadTimeAverage: humanDuration(Math.floor(average(leadTimes)) * 1000),
+    leadTimeMedian: humanDuration(Math.floor(median(leadTimes)) * 1000),
+    timeToMergeAverage: humanDuration(Math.floor(average(timeToMerges)) * 1000),
+    timeToMergeMedian: humanDuration(Math.floor(median(timeToMerges)) * 1000),
+    timeToMergeFromFirstReviewAverage: humanDuration(Math.floor(average(timeToMergeFromFirstReviews)) * 1000),
+    timeToMergeFromFirstReviewMedian: humanDuration(Math.floor(median(timeToMergeFromFirstReviews)) * 1000),
     responseTimeAverage: humanDuration(Math.floor(average(responseTimes)) * 1000),
     responseTimeMedian: humanDuration(Math.floor(median(responseTimes)) * 1000),
   };
