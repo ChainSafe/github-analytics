@@ -1,7 +1,7 @@
 import { parseISO } from "date-fns";
 import { Octokit } from "@octokit/core";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
-import { PullRequest } from "./entity";
+import { Issue, PullRequest } from "./entity";
 
 const GITHUB_ENDPOINT = process.env.GITHUB_ENDPOINT || "https://api.github.com";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
@@ -24,21 +24,21 @@ export async function fetchAllPullRequests(
   return await fetchAllPullRequestsByQuery(q);
 }
 
-// export async function fetchAllIssues(
-//   searchQuery: string,
-//   startDateString?: string,
-//   endDateString?: string
-// ): Promise<PullRequest[]> {
-//   const startDate = startDateString ? parseISO(startDateString).toISOString() : "";
-//   const endDate = endDateString ? parseISO(endDateString).toISOString() : "";
+export async function fetchAllIssues(
+  searchQuery: string,
+  startDateString?: string,
+  endDateString?: string
+): Promise<Issue[]> {
+  const startDate = startDateString ? parseISO(startDateString).toISOString() : "";
+  const endDate = endDateString ? parseISO(endDateString).toISOString() : "";
 
-//   let q = `is:issue ${searchQuery}`;
-//   if (startDate !== "" || endDate !== "") {
-//     q += ` created:${startDate}..${endDate}`;
-//   }
+  let q = `is:issue ${searchQuery}`;
+  if (startDate !== "" || endDate !== "") {
+    q += ` created:${startDate}..${endDate}`;
+  }
 
-//   return fetchAllIssuesByQuery(q);
-// }
+  return fetchAllIssuesByQuery(q);
+}
 
 interface PullRequestNode {
   title: string;
@@ -59,6 +59,9 @@ interface PullRequestNode {
   };
   reviews: {
     nodes: {
+      author: {
+        login: string | undefined;
+      };
       createdAt: string;
     }[];
   };
@@ -89,9 +92,12 @@ async function fetchAllPullRequestsByQuery(searchQuery: string): Promise<PullReq
               }
             }
             # for time to merge from review
-            reviews(first:1) {
+            reviews(first:50) {
               nodes {
                 ... on PullRequestReview {
+                  author {
+                    login
+                  }
                   createdAt
                 }
               }
@@ -125,10 +131,90 @@ async function fetchAllPullRequestsByQuery(searchQuery: string): Promise<PullReq
           p.additions,
           p.deletions,
           p.commits.nodes[0].commit.authoredDate,
-          p.reviews.nodes[0] ? p.reviews.nodes[0].createdAt : undefined
+          p.reviews.nodes.map((r) => {
+            return {
+              author: r.author?.login,
+              createdAt: r.createdAt,
+            };
+          })
         );
       })
     );
   }
   return prs;
+}
+
+interface IssueNode {
+  title: string;
+  author: {
+    login: string;
+  } | null;
+  url: string;
+  closedAt: string;
+  createdAt: string;
+  comments: {
+    nodes: {
+      author: {
+        login: string;
+      };
+      createdAt: string;
+    }[];
+  };
+}
+
+async function fetchAllIssuesByQuery(searchQuery: string): Promise<Issue[]> {
+  const pageIterator = octokit.graphql.paginate.iterator(
+    `query paginate($cursor: String, $searchQuery: String!) {
+      search(type: ISSUE, first: 100, query: $searchQuery, after: $cursor) {
+          nodes {
+            ... on Issue {
+              title
+              author {
+                login
+              }
+              url
+              closedAt
+              createdAt
+              comments(first: 50) {
+                nodes {
+                  author {
+                    login
+                  }
+                  createdAt
+                }
+              }
+          }
+        }
+        pageInfo {
+          endCursor
+          hasNextPage
+        }
+      }
+      rateLimit {
+        limit
+        cost
+        remaining
+        resetAt
+      }
+    }`,
+    { searchQuery }
+  );
+  let issues: Issue[] = [];
+  for await (const response of pageIterator) {
+    issues = issues.concat(
+      response.search.nodes.map((i: IssueNode) => {
+        return new Issue(
+          i.title,
+          i.author?.login,
+          i.url,
+          i.createdAt,
+          i.closedAt,
+          i.comments.nodes.map((c) => {
+            return { createdAt: c.createdAt, author: c.author?.login };
+          })
+        );
+      })
+    );
+  }
+  return issues;
 }

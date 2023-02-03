@@ -1,7 +1,8 @@
-import { fetchAllPullRequests } from "./github";
-import csvStringify from "csv-stringify/lib/sync";
+import { writeFileSync } from "fs";
+import { fetchAllIssues, fetchAllPullRequests } from "./github";
 
 interface LogCommandOptions {
+  output: string;
   start: string;
   end: string;
   query: string;
@@ -9,13 +10,7 @@ interface LogCommandOptions {
 }
 export async function logCommand(options: LogCommandOptions): Promise<void> {
   const prs = await fetchAllPullRequests(options.query, options.start, options.end);
+  const issues = await fetchAllIssues(options.query, options.start, options.end);
 
-  if (options.format === "json") {
-    process.stdout.write(JSON.stringify(prs, undefined, 2));
-  } else if (options.format === "csv") {
-    process.stdout.write(csvStringify(prs, { header: true }));
-  } else {
-    console.error("--format can be csv or json only");
-    process.exit(1);
-  }
+  writeFileSync(options.output, JSON.stringify({ prs, issues }, undefined, 2), { encoding: "utf-8" });
 }

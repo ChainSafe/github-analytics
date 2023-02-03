@@ -15,10 +15,10 @@ async function main(): Promise<void> {
 
   program
     .command("log")
+    .requiredOption("--output <path>", "location where to output raw data in json")
     .requiredOption("--start <date>", "start date")
     .requiredOption("--end <date>", "end date")
     .requiredOption("--query <search query>", "query for github search")
-    .option("--format <format>", "output format.  The available is json or csv", "json")
     .action(logCommand);
 
   program.parse(process.argv);

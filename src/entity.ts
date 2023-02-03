@@ -15,16 +15,28 @@ export class PullRequest {
     public additions: number,
     public deletions: number,
     public authoredDate: string,
-    public firstReviewedAt: string | undefined
+    public reviews: { createdAt: string; author: string | undefined }[]
   ) {
     const mergedAtMillis = this.mergedAt ? parseISO(this.mergedAt).getTime() : new Date().getTime();
-    this.responseTimeSeconds = this.firstReviewedAt
-      ? (parseISO(this.firstReviewedAt).getTime() - parseISO(this.createdAt).getTime()) / 1000
+    const firstReviewedAt = this.reviews[0]?.createdAt;
+    this.responseTimeSeconds = firstReviewedAt
+      ? (parseISO(firstReviewedAt).getTime() - parseISO(this.createdAt).getTime()) / 1000
       : undefined;
     this.leadTimeSeconds = (mergedAtMillis - parseISO(this.authoredDate).getTime()) / 1000;
     this.timeToMergeSeconds = (mergedAtMillis - parseISO(this.createdAt).getTime()) / 1000;
-    this.timeToMergeFromFirstReviewSeconds = this.firstReviewedAt
-      ? (mergedAtMillis - parseISO(this.firstReviewedAt).getTime()) / 1000
+    this.timeToMergeFromFirstReviewSeconds = firstReviewedAt
+      ? (mergedAtMillis - parseISO(firstReviewedAt).getTime()) / 1000
       : undefined;
   }
+}
+
+export class Issue {
+  constructor(
+    public title: string,
+    public author: string | undefined,
+    public url: string,
+    public createdAt: string,
+    public closedAt: string | undefined,
+    public comments: { createdAt: string; author: string | undefined }[]
+  ) {}
 }
