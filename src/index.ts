@@ -10,17 +10,24 @@ async function main(): Promise<void> {
   const pr = program.command("pr");
 
   pr.command("stat", { isDefault: true })
-    .option("--input <filepath>")
-    .option("--start <date>")
-    .option("--end <date>")
-    .option("--query <search query>")
+    .option("--input <filepath>", "Location of file with raw data")
+    .option("--start <date>", "Filters by date created. Format YYYY-MM-DD")
+    .option("--end <date>", "Filters by date created. Format YYYY-MM-DD")
+    .option(
+      "--query <search query>",
+      'Github search query for repositories. Example: "repo:microsoft/vscode repo:microsoft/TypeScript"'
+    )
+    .option("--teamMembers <teamMembers>", "Comma separated github usernames of team members")
     .action(prsCommands.statCommand);
 
   pr.command("log")
-    .requiredOption("--output <path>", "location where to output raw data in json")
-    .requiredOption("--start <date>", "start date")
-    .requiredOption("--end <date>", "end date")
-    .requiredOption("--query <search query>", "query for github search")
+    .requiredOption("--output <path>", "Location where to output raw data in json")
+    .requiredOption("--start <date>", "Filters by date created. Format YYYY-MM-DD")
+    .requiredOption("--end <date>", "Filters by date created. Format YYYY-MM-DD")
+    .requiredOption(
+      "--query <search query>",
+      'Github search query for repositories. Example: "repo:microsoft/vscode repo:microsoft/TypeScript"'
+    )
     .action(prsCommands.logCommand);
 
   //issues
@@ -28,18 +35,25 @@ async function main(): Promise<void> {
 
   issues
     .command("stat", { isDefault: true })
-    .option("--input <filepath>")
-    .option("--start <date>")
-    .option("--end <date>")
-    .option("--query <search query>")
+    .option("--input <filepath>", "Location of file with raw data")
+    .option("--start <date>", "Filters by date created. Format YYYY-MM-DD")
+    .option("--end <date>", "Filters by date created. Format YYYY-MM-DD")
+    .option(
+      "--query <search query>",
+      'Github search query for repositories. Example: "repo:microsoft/vscode repo:microsoft/TypeScript"'
+    )
+    .option("--teamMembers <teamMembers>", "Comma separated github usernames of team members")
     .action(issuesCommands.statCommand);
 
   issues
     .command("log")
-    .requiredOption("--output <path>", "location where to output raw data in json")
-    .requiredOption("--start <date>", "start date")
-    .requiredOption("--end <date>", "end date")
-    .requiredOption("--query <search query>", "query for github search")
+    .requiredOption("--output <path>", "Location where to output raw data in json")
+    .requiredOption("--start <date>", "Filters by date created. Format YYYY-MM-DD")
+    .requiredOption("--end <date>", "Filters by date created. Format YYYY-MM-DD")
+    .requiredOption(
+      "--query <search query>",
+      'Github search query for repositories. Example: "repo:microsoft/vscode repo:microsoft/TypeScript"'
+    )
     .action(issuesCommands.logCommand);
 
   program.parse(process.argv);

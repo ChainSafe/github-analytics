@@ -1,6 +1,6 @@
-import { parseISO } from "date-fns";
 import { Octokit } from "@octokit/core";
 import { paginateGraphql } from "@octokit/plugin-paginate-graphql";
+import moment from "moment";
 import { Issue, PullRequest } from "./entity";
 
 const GITHUB_ENDPOINT = process.env.GITHUB_ENDPOINT || "https://api.github.com";
@@ -13,10 +13,10 @@ export async function fetchAllPullRequests(
   startDateString?: string,
   endDateString?: string
 ): Promise<PullRequest[]> {
-  const startDate = startDateString ? parseISO(startDateString).toISOString() : "";
-  const endDate = endDateString ? parseISO(endDateString).toISOString() : "";
+  const startDate = startDateString ? moment(startDateString).toISOString() : "";
+  const endDate = endDateString ? moment(endDateString).toISOString() : "";
 
-  let q = `is:pr ${searchQuery}`;
+  let q = `is:pr -is:draft ${searchQuery}`;
   if (startDate !== "" || endDate !== "") {
     q += ` created:${startDate}..${endDate}`;
   }
@@ -29,8 +29,8 @@ export async function fetchAllIssues(
   startDateString?: string,
   endDateString?: string
 ): Promise<Issue[]> {
-  const startDate = startDateString ? parseISO(startDateString).toISOString() : "";
-  const endDate = endDateString ? parseISO(endDateString).toISOString() : "";
+  const startDate = startDateString ? moment(startDateString).toISOString() : "";
+  const endDate = endDateString ? moment(endDateString).toISOString() : "";
 
   let q = `is:issue ${searchQuery}`;
   if (startDate !== "" || endDate !== "") {
@@ -49,6 +49,7 @@ interface PullRequestNode {
   createdAt: string;
   mergedAt?: string;
   additions: number;
+  closed: boolean;
   deletions: number;
   commits: {
     nodes: {
@@ -81,6 +82,7 @@ async function fetchAllPullRequestsByQuery(searchQuery: string): Promise<PullReq
             url
             createdAt
             mergedAt
+            closed
             additions
             deletions
             # for lead time
@@ -121,24 +123,28 @@ async function fetchAllPullRequestsByQuery(searchQuery: string): Promise<PullReq
   let prs: PullRequest[] = [];
   for await (const response of pageIterator) {
     prs = prs.concat(
-      response.search.nodes.map((p: PullRequestNode) => {
-        return new PullRequest(
-          p.title,
-          p.author ? p.author.login : undefined,
-          p.url,
-          p.createdAt,
-          p.mergedAt,
-          p.additions,
-          p.deletions,
-          p.commits.nodes[0].commit.authoredDate,
-          p.reviews.nodes.map((r) => {
-            return {
-              author: r.author?.login,
-              createdAt: r.createdAt,
-            };
-          })
-        );
-      })
+      response.search.nodes
+        //removed closed but not merged prs
+        .filter((p: PullRequestNode) => !(p.closed === true && p.mergedAt == null))
+        .map((p: PullRequestNode) => {
+          return new PullRequest(
+            p.title,
+            p.author ? p.author.login : undefined,
+            p.url,
+            p.createdAt,
+            p.mergedAt,
+            p.additions,
+            p.deletions,
+            p.commits.nodes[0].commit.authoredDate,
+            p.closed,
+            p.reviews.nodes.map((r) => {
+              return {
+                author: r.author?.login,
+                createdAt: r.createdAt,
+              };
+            })
+          );
+        })
     );
   }
   return prs;

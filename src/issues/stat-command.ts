@@ -1,15 +1,17 @@
-import parseISO from "date-fns/parseISO";
 import fs from "fs";
 import humanDuration from "humanize-duration";
 import { median as _median } from "mathjs";
+import moment from "moment";
 import { Issue } from "../entity";
 import { fetchAllIssues } from "../github";
+import { isTeamMember } from "../util";
 
 interface StatCommandOptions {
   input: string | undefined;
   start: string | undefined;
   end: string | undefined;
   query: string | undefined;
+  teamMembers: string | undefined;
 }
 export async function statCommand(options: StatCommandOptions): Promise<void> {
   let issues: Issue[] = [];
@@ -23,7 +25,8 @@ export async function statCommand(options: StatCommandOptions): Promise<void> {
     process.exit(1);
   }
 
-  process.stdout.write(JSON.stringify(createStat(issues), undefined, 2));
+  const teamMembers: string[] = options.teamMembers?.toLowerCase().split(",") ?? [];
+  process.stdout.write(JSON.stringify(createStat(issues, teamMembers), undefined, 2));
 }
 
 interface GithubAnalytics {
@@ -37,24 +40,25 @@ interface GithubAnalytics {
     timeToCloseMedian: string;
   };
 }
-export function createStat(issues: Issue[]): GithubAnalytics {
+export function createStat(issues: Issue[], teamMembers: string[]): GithubAnalytics {
+  const externalIssues = issues.filter((i) => !isTeamMember(teamMembers, i.author));
   const closedIssues = issues.filter((i) => i.closedAt != undefined);
-  const issueResponseTimes = issues.map((i) => {
-    const comment = i.comments[0];
+  const issueResponseTimes = externalIssues.map((i) => {
+    const comment = i.comments.find((c) => isTeamMember(teamMembers, c.author));
     if (comment) {
-      return parseISO(comment.createdAt).getTime() - parseISO(i.createdAt).getTime();
+      return moment(comment.createdAt).diff(moment(i.createdAt), "milliseconds");
     } else {
-      return new Date().getTime() - parseISO(i.createdAt).getTime();
+      const end = i.closedAt ? moment(i.closedAt) : moment();
+      return end.diff(moment(i.createdAt), "milliseconds");
     }
   });
   const closeTimes = closedIssues.map((i) => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return parseISO(i.closedAt!).getTime() - parseISO(i.createdAt).getTime();
+    return moment(i.createdAt).diff(moment(i.closedAt), "milliseconds");
   });
   return {
     issues: {
       issueCount: issues.length + " issues",
-      externalIssueCount: issues.length + " issues",
+      externalIssueCount: externalIssues.length + " issues",
       closedIssueCount: closedIssues.length + " issues",
       responseTimeAverage: humanDuration(average(issueResponseTimes)),
       responseTimeMedian: humanDuration(median(issueResponseTimes)),

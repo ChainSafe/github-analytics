@@ -1,14 +1,17 @@
 import fs from "fs";
 import humanDuration from "humanize-duration";
 import { median as _median } from "mathjs";
+import moment from "moment";
 import { PullRequest } from "../entity";
 import { fetchAllPullRequests } from "../github";
+import { isBot, isTeamMember } from "../util";
 
 interface StatCommandOptions {
   input: string | undefined;
   start: string | undefined;
   end: string | undefined;
   query: string | undefined;
+  teamMembers: string | undefined;
 }
 export async function statCommand(options: StatCommandOptions): Promise<void> {
   let prs: PullRequest[] = [];
@@ -21,8 +24,8 @@ export async function statCommand(options: StatCommandOptions): Promise<void> {
     console.error("You must specify either --query or --input");
     process.exit(1);
   }
-
-  process.stdout.write(JSON.stringify(createStat(prs), undefined, 2));
+  const teamMembers: string[] = options.teamMembers?.toLowerCase().split(",") ?? [];
+  process.stdout.write(JSON.stringify(createStat(prs, teamMembers), undefined, 2));
 }
 
 interface GithubAnalytics {
@@ -40,21 +43,35 @@ interface GithubAnalytics {
     timeToMergeFromFirstReviewAverage: string;
     timeToMergeFromFirstReviewMedian: string;
     responseTimeAverage: string;
-    responseTimeMedian: string;
   };
 }
-export function createStat(prs: PullRequest[]): GithubAnalytics {
+export function createStat(prs: PullRequest[], teamMembers: string[]): GithubAnalytics {
+  prs = prs.filter((pr) => !isBot(pr.author));
+  const externalPullRequests = prs.filter((pr) => !isTeamMember(teamMembers, pr.author));
   const mergedPrs = prs.filter((pr) => pr.mergedAt != undefined);
   const leadTimes = mergedPrs.map((pr) => pr.leadTimeSeconds);
   const timeToMerges = mergedPrs.map((pr) => pr.timeToMergeSeconds);
   const timeToMergeFromFirstReviews = mergedPrs
-    .map((pr) => pr.timeToMergeFromFirstReviewSeconds)
+    .map((pr) => {
+      const firstReview = pr.reviews.find((review) => {
+        return isTeamMember(teamMembers, review.author);
+      });
+      const mergedAt = pr.mergedAt ? moment(pr.mergedAt) : moment();
+      return firstReview ? mergedAt.diff(moment(firstReview.createdAt), "seconds") : undefined;
+    })
     .filter((x): x is number => x !== undefined);
-  const prResponseTime = prs.map((pr) => pr.responseTimeSeconds).filter((x): x is number => x !== undefined);
+  const prResponseTime = prs
+    .map((pr) => {
+      const firstReview = pr.reviews.find((review) => {
+        return isTeamMember(teamMembers, review.author);
+      });
+      return firstReview ? moment(firstReview.createdAt).diff(moment(pr.createdAt), "seconds") : undefined;
+    })
+    .filter((x): x is number => x !== undefined);
   return {
     pull_request: {
       pullRequestCount: prs.length + " pull requests",
-      externalPullRequestCount: prs.length + " pull requests",
+      externalPullRequestCount: externalPullRequests.length + " pull requests",
       additionsAverage: Math.round(average(prs.map((pr) => pr.additions))) + " lines",
       additionsMedian: Math.round(median(prs.map((pr) => pr.additions))) + " lines",
       deletionsAverage: Math.round(average(prs.map((pr) => pr.deletions))) + " lines",
@@ -66,7 +83,6 @@ export function createStat(prs: PullRequest[]): GithubAnalytics {
       timeToMergeFromFirstReviewAverage: humanDuration(Math.floor(average(timeToMergeFromFirstReviews)) * 1000),
       timeToMergeFromFirstReviewMedian: humanDuration(Math.floor(median(timeToMergeFromFirstReviews)) * 1000),
       responseTimeAverage: humanDuration(Math.floor(average(prResponseTime)) * 1000),
-      responseTimeMedian: humanDuration(Math.floor(median(prResponseTime)) * 1000),
     },
   };
 }
@@ -95,6 +111,7 @@ export function createPullRequestsByLog(path: string): PullRequest[] {
         p.additions,
         p.deletions,
         p.authoredDate,
+        p.closed,
         p.reviews
       )
   );

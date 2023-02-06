@@ -1,8 +1,8 @@
 # Github Analytics
-This is a tool to collect various Gtihub Analytics not currently tracked by GithHub. 
+
+This is a tool to collect various Gtihub Analytics not currently tracked by GithHub.
 Some of the things you could analyze are response times (time till first comment/review) for new issues and pull requests, the time required to merge PRs, and statistics on community-opened issues and pull requests.
 It is useful to measure the productivity and health of your team as well as community support and usage.
-
 
 Many thanks to `shibayu36` who created the initial implementation for pull request stats.
 
@@ -41,26 +41,26 @@ output is
 ```
 
 * count: the number of merged PullRequests
-* authorCount: the number of author who creates PullRequests
-* additionsAverage: the average of number of added lines
-* additionsMedian: the median of number of added lines
-* deletionsAverage: the average of number of deleted lines
-* deletionsMedian: the median of number of deleted lines
+* additionsAverage: the average of the number of added lines
+* additionsMedian: the median of the number of added lines
+* deletionsAverage: the average of the number of deleted lines
+* deletionsMedian: the median of the number of deleted lines
 * leadTimeSecondsAverage: the average of seconds between a first commit date and a PullRequest merged date
 * leadTimeSecondsMedian: the median of seconds between a first commit date and a PullRequest merged date
 * timeToMergeSecondsAverage: the average of seconds between a PullRequest created and a PullRequest merged
 * timeToMergeSecondsMedian: the median of seconds between a PullRequest created and a PullRequest merged
-* timeToMergeFromFirstReviewSecondsAverage: the average of seconds between a first review  and a PullRequest merged.
-* timeToMergeFromFirstReviewSecondsMedian: the median of seconds between a first review  and a PullRequest merged.
+* timeToMergeFromFirstReviewSecondsAverage: the average of seconds between a first review and a PullRequest merged.
+* timeToMergeFromFirstReviewSecondsMedian: the median of seconds between a first review and a PullRequest merged.
 
-If you want to know about leadTime and timeToMerge for details, See https://sourcelevel.io/blog/5-metrics-engineering-managers-can-extract-from-pull-requests
+If you want to know about leadTime and timeToMerge for details, See <https://sourcelevel.io/blog/5-metrics-engineering-managers-can-extract-from-pull-requests>
 
 ```bash
-|------------- lead time -------------|
-                |--- time to merge ---|
----------------------------------------
-^               ^                     ^
-first commit    create PullRequest    merge PullRequest
+|------------- lead time ---------------------------------|
+                |--- response time ---|
+                |---------- time to merge ----------------|
+-----------------------------------------------------------
+^               ^                     ^                   ^
+first commit    create PullRequest    first review        PullRequest merged
 ```
 
 ### log command
