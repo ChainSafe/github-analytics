@@ -15,6 +15,8 @@ yarn global add @chainsafe/github-analytics
 
 ## Usage
 
+To use this tool, you will need to obtain Github Personal Access Token (PAT) which you can do by following [Github's instructions](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token). The minimum required permissions are: repo(repo:status, public_repo), read:org, read:discussions.
+
 ### Issues stats
 
 The following command aggregates Issues of web3.js and web3.js-chainlink-plugin which merged between `--start` and `--end`.  You can additionally filter Issues by the `--query` option.  See also <https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests> if you want to know what you can specify for `--query`

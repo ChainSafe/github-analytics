@@ -5,10 +5,10 @@ jobs:
   eslint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: "14"
-          check-latest: true
-      - run: npm install
-      - run: npm run lint
+          node-version: "16"
+          cache: "yarn"
+      - run: yarn
+      - run: yarn lint
