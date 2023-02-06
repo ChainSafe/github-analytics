@@ -25,8 +25,11 @@ export async function statCommand(options: StatCommandOptions): Promise<void> {
     process.exit(1);
   }
 
-  const teamMembers: string[] = options.teamMembers?.toLowerCase().split(",") ?? [];
-  process.stdout.write(JSON.stringify(createStat(issues, teamMembers), undefined, 2));
+  const teamMembers: string[] =
+    options.teamMembers?.toLowerCase().split(",") ?? [];
+  process.stdout.write(
+    JSON.stringify(createStat(issues, teamMembers), undefined, 2)
+  );
 }
 
 interface GithubAnalytics {
@@ -40,13 +43,21 @@ interface GithubAnalytics {
     timeToCloseMedian: string;
   };
 }
-export function createStat(issues: Issue[], teamMembers: string[]): GithubAnalytics {
-  const externalIssues = issues.filter((i) => !isTeamMember(teamMembers, i.author));
+export function createStat(
+  issues: Issue[],
+  teamMembers: string[]
+): GithubAnalytics {
+  const externalIssues = issues.filter(
+    (i) => !isTeamMember(teamMembers, i.author)
+  );
   const closedIssues = externalIssues.filter((i) => i.closedAt != undefined);
   const issueResponseTimes = externalIssues.map((i) => {
     const comment = i.comments.find((c) => isTeamMember(teamMembers, c.author));
     if (comment) {
-      return moment(comment.createdAt).diff(moment(i.createdAt), "milliseconds");
+      return moment(comment.createdAt).diff(
+        moment(i.createdAt),
+        "milliseconds"
+      );
     } else {
       const end = i.closedAt ? moment(i.closedAt) : moment();
       return end.diff(moment(i.createdAt), "milliseconds");
@@ -57,9 +68,9 @@ export function createStat(issues: Issue[], teamMembers: string[]): GithubAnalyt
   });
   return {
     issues: {
-      issueCount: issues.length + " issues",
-      externalIssueCount: externalIssues.length + " issues",
-      externalIssueClosedCount: closedIssues.length + " issues",
+      issueCount: String(issues.length) + " issues",
+      externalIssueCount: String(externalIssues.length) + " issues",
+      externalIssueClosedCount: String(closedIssues.length) + " issues",
       responseTimeAverage: humanDuration(average(issueResponseTimes)),
       responseTimeMedian: humanDuration(median(issueResponseTimes)),
       timeToCloseAverage: humanDuration(average(closeTimes)),
@@ -75,10 +86,16 @@ function average(numbers: number[]): number {
 
 function median(numbers: number[]): number {
   if (numbers.length === 0) return 0;
-  return _median(numbers);
+  return _median(numbers) as number;
 }
 
 export function createIssuesByLog(path: string): Issue[] {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const logs = JSON.parse(fs.readFileSync(path, "utf8"));
-  return logs.map((i: any) => new Issue(i.title, i.author, i.url, i.createdAt, i.closedAt, i.comments));
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+  return logs.map(
+    (i: any) =>
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      new Issue(i.title, i.author, i.url, i.createdAt, i.closedAt, i.comments)
+  );
 }

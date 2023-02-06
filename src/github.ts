@@ -6,14 +6,19 @@ import { Issue, PullRequest } from "./entity";
 const GITHUB_ENDPOINT = process.env.GITHUB_ENDPOINT || "https://api.github.com";
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 
-const octokit = new (Octokit.plugin(paginateGraphql))({ auth: GITHUB_TOKEN, baseUrl: GITHUB_ENDPOINT });
+const octokit = new (Octokit.plugin(paginateGraphql))({
+  auth: GITHUB_TOKEN,
+  baseUrl: GITHUB_ENDPOINT,
+});
 
 export async function fetchAllPullRequests(
   searchQuery: string,
   startDateString?: string,
   endDateString?: string
 ): Promise<PullRequest[]> {
-  const startDate = startDateString ? moment(startDateString).toISOString() : "";
+  const startDate = startDateString
+    ? moment(startDateString).toISOString()
+    : "";
   const endDate = endDateString ? moment(endDateString).toISOString() : "";
 
   let q = `is:pr -is:draft ${searchQuery}`;
@@ -29,7 +34,9 @@ export async function fetchAllIssues(
   startDateString?: string,
   endDateString?: string
 ): Promise<Issue[]> {
-  const startDate = startDateString ? moment(startDateString).toISOString() : "";
+  const startDate = startDateString
+    ? moment(startDateString).toISOString()
+    : "";
   const endDate = endDateString ? moment(endDateString).toISOString() : "";
 
   let q = `is:issue ${searchQuery}`;
@@ -68,7 +75,9 @@ interface PullRequestNode {
   };
 }
 
-async function fetchAllPullRequestsByQuery(searchQuery: string): Promise<PullRequest[]> {
+async function fetchAllPullRequestsByQuery(
+  searchQuery: string
+): Promise<PullRequest[]> {
   const pageIterator = octokit.graphql.paginate.iterator(
     `query paginate($cursor: String, $searchQuery: String!) {
       search(type: ISSUE, first: 100, query: $searchQuery, after: $cursor) {
@@ -125,7 +134,9 @@ async function fetchAllPullRequestsByQuery(searchQuery: string): Promise<PullReq
     prs = prs.concat(
       response.search.nodes
         //removed closed but not merged prs
-        .filter((p: PullRequestNode) => !(p.closed === true && p.mergedAt == null))
+        .filter(
+          (p: PullRequestNode) => !(p.closed === true && p.mergedAt == null)
+        )
         .map((p: PullRequestNode) => {
           return new PullRequest(
             p.title,

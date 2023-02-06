@@ -17,8 +17,14 @@ export class PullRequest {
     public reviews: { createdAt: string; author: string | undefined }[]
   ) {
     const mergedAtParsed = this.mergedAt ? moment(this.mergedAt) : moment();
-    this.leadTimeSeconds = mergedAtParsed.diff(moment(this.authoredDate), "seconds");
-    this.timeToMergeSeconds = mergedAtParsed.diff(moment(this.createdAt), "seconds");
+    this.leadTimeSeconds = mergedAtParsed.diff(
+      moment(this.authoredDate),
+      "seconds"
+    );
+    this.timeToMergeSeconds = mergedAtParsed.diff(
+      moment(this.createdAt),
+      "seconds"
+    );
   }
 }
 

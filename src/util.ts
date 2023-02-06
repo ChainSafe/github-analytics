@@ -1,4 +1,7 @@
-export function isTeamMember(members: string[], member: string | undefined): boolean {
+export function isTeamMember(
+  members: string[],
+  member: string | undefined
+): boolean {
   if (members.length === 0) {
     return true;
   }

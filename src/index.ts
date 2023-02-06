@@ -17,13 +17,25 @@ async function main(): Promise<void> {
       "--query <search query>",
       'Github search query for repositories. Example: "repo:microsoft/vscode repo:microsoft/TypeScript"'
     )
-    .option("--teamMembers <teamMembers>", "Comma separated github usernames of team members")
+    .option(
+      "--teamMembers <teamMembers>",
+      "Comma separated github usernames of team members"
+    )
     .action(prsCommands.statCommand);
 
   pr.command("log")
-    .requiredOption("--output <path>", "Location where to output raw data in json")
-    .requiredOption("--start <date>", "Filters by date created. Format YYYY-MM-DD")
-    .requiredOption("--end <date>", "Filters by date created. Format YYYY-MM-DD")
+    .requiredOption(
+      "--output <path>",
+      "Location where to output raw data in json"
+    )
+    .requiredOption(
+      "--start <date>",
+      "Filters by date created. Format YYYY-MM-DD"
+    )
+    .requiredOption(
+      "--end <date>",
+      "Filters by date created. Format YYYY-MM-DD"
+    )
     .requiredOption(
       "--query <search query>",
       'Github search query for repositories. Example: "repo:microsoft/vscode repo:microsoft/TypeScript"'
@@ -31,7 +43,9 @@ async function main(): Promise<void> {
     .action(prsCommands.logCommand);
 
   //issues
-  const issues = program.command("issues").description("Github repository issues/discoussion stats");
+  const issues = program
+    .command("issues")
+    .description("Github repository issues/discoussion stats");
 
   issues
     .command("stat", { isDefault: true })
@@ -42,14 +56,26 @@ async function main(): Promise<void> {
       "--query <search query>",
       'Github search query for repositories. Example: "repo:microsoft/vscode repo:microsoft/TypeScript"'
     )
-    .option("--teamMembers <teamMembers>", "Comma separated github usernames of team members")
+    .option(
+      "--teamMembers <teamMembers>",
+      "Comma separated github usernames of team members"
+    )
     .action(issuesCommands.statCommand);
 
   issues
     .command("log")
-    .requiredOption("--output <path>", "Location where to output raw data in json")
-    .requiredOption("--start <date>", "Filters by date created. Format YYYY-MM-DD")
-    .requiredOption("--end <date>", "Filters by date created. Format YYYY-MM-DD")
+    .requiredOption(
+      "--output <path>",
+      "Location where to output raw data in json"
+    )
+    .requiredOption(
+      "--start <date>",
+      "Filters by date created. Format YYYY-MM-DD"
+    )
+    .requiredOption(
+      "--end <date>",
+      "Filters by date created. Format YYYY-MM-DD"
+    )
     .requiredOption(
       "--query <search query>",
       'Github search query for repositories. Example: "repo:microsoft/vscode repo:microsoft/TypeScript"'
