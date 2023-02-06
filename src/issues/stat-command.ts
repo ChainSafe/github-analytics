@@ -33,7 +33,7 @@ interface GithubAnalytics {
   issues: {
     issueCount: string;
     externalIssueCount: string;
-    closedIssueCount: string;
+    externalIssueClosedCount: string;
     responseTimeAverage: string;
     responseTimeMedian: string;
     timeToCloseAverage: string;
@@ -42,7 +42,7 @@ interface GithubAnalytics {
 }
 export function createStat(issues: Issue[], teamMembers: string[]): GithubAnalytics {
   const externalIssues = issues.filter((i) => !isTeamMember(teamMembers, i.author));
-  const closedIssues = issues.filter((i) => i.closedAt != undefined);
+  const closedIssues = externalIssues.filter((i) => i.closedAt != undefined);
   const issueResponseTimes = externalIssues.map((i) => {
     const comment = i.comments.find((c) => isTeamMember(teamMembers, c.author));
     if (comment) {
@@ -59,7 +59,7 @@ export function createStat(issues: Issue[], teamMembers: string[]): GithubAnalyt
     issues: {
       issueCount: issues.length + " issues",
       externalIssueCount: externalIssues.length + " issues",
-      closedIssueCount: closedIssues.length + " issues",
+      externalIssueClosedCount: closedIssues.length + " issues",
       responseTimeAverage: humanDuration(average(issueResponseTimes)),
       responseTimeMedian: humanDuration(median(issueResponseTimes)),
       timeToCloseAverage: humanDuration(average(closeTimes)),

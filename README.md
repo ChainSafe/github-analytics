@@ -15,42 +15,70 @@ yarn global add @chainsafe/github-analytics
 
 ## Usage
 
-The following command aggregates PullRequests of microsoft/vscode and microsoft/TypesScript which merged between `--start` and `--end`.  You can filter PullRequests by `--query` option.  See also <https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests> if you want to know what you can specify for `--query`
+### Issues stats
+
+The following command aggregates Issues of web3.js and web3.js-chainlink-plugin which merged between `--start` and `--end`.  You can additionally filter Issues by the `--query` option.  See also <https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests> if you want to know what you can specify for `--query`
 
 ```bash
-GITHUB_TOKEN=... ga --start=2020-07-01T00:00:00 --end=2020-07-30T23:59:59 --query="repo:microsoft/vscode repo:microsoft/TypeScript"
+GITHUB_TOKEN=... ga issues stat --start="2023-01-01T00:00:00" --end="2023-02-01" --query="repo:web3/web3.js repo:chainsafe/web3.js-plugin-chainlink" --teamMembers=avkos,jdevcs,luu-alex,mconnelly8,Muhammad-Altabba,nikoulai,spacesailor24
 ```
 
 output is
 
 ```json
 {
-  "count": 258,
-  "authorCount": 77,
-  "additionsAverage": 107.89147286821705,
-  "additionsMedian": 19,
-  "deletionsAverage": 41.97286821705426,
-  "deletionsMedian": 3,
-  "leadTimeSecondsAverage": 578271,
-  "leadTimeSecondsMedian": 58163,
-  "timeToMergeSecondsAverage": 735697,
-  "timeToMergeSecondsMedian": 82453,
-  "timeToMergeFromFirstReviewSecondsAverage": 426871,
-  "timeToMergeFromFirstReviewSecondsMedian": 15432
+ "issues": {
+    "issueCount": "30 issues",
+    "externalIssueCount": "11 issues",
+    "externalIssueClosedCount": "4 issues",
+    "responseTimeAverage": "2 weeks, 17 hours, 54 minutes, 51.9395454545021 seconds", //only external issues
+    "responseTimeMedian": "6 days, 8 hours, 33 minutes, 1 second", //only external issues
+    "timeToCloseAverage": "1 week, 4 days, 4 hours, 28 minutes, 55.75 seconds", //only external issues
+    "timeToCloseMedian": "1 week, 2 days, 22 hours, 45 minutes, 30.5 seconds" //only external issues
+  }
 }
 ```
 
-* count: the number of merged PullRequests
-* additionsAverage: the average of the number of added lines
-* additionsMedian: the median of the number of added lines
-* deletionsAverage: the average of the number of deleted lines
-* deletionsMedian: the median of the number of deleted lines
-* leadTimeSecondsAverage: the average of seconds between a first commit date and a PullRequest merged date
-* leadTimeSecondsMedian: the median of seconds between a first commit date and a PullRequest merged date
-* timeToMergeSecondsAverage: the average of seconds between a PullRequest created and a PullRequest merged
-* timeToMergeSecondsMedian: the median of seconds between a PullRequest created and a PullRequest merged
-* timeToMergeFromFirstReviewSecondsAverage: the average of seconds between a first review and a PullRequest merged.
-* timeToMergeFromFirstReviewSecondsMedian: the median of seconds between a first review and a PullRequest merged.
+* response time: diff between an Issue created and the first comment by a team member
+* timeToClose: diff between an Issue created and an Issue closed
+
+#### log command
+
+If you want to get raw information about PullRequests, you can use a `pr log` command.
+
+### PullRequest stats
+
+The following command aggregates PullRequests of web3.js and web3.js-chainlink-plugin which merged between `--start` and `--end`.  You can additionally filter PullRequests by the `--query` option.  See also <https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests> if you want to know what you can specify for `--query`
+
+```bash
+GITHUB_TOKEN=... ga pr stat --start="2023-01-01T00:00:00" --end="2023-02-01" --query="repo:web3/web3.js repo:chainsafe/web3.js-plugin-chainlink" --teamMembers=avkos,jdevcs,luu-alex,mconnelly8,Muhammad-Altabba,nikoulai,spacesailor24
+```
+
+output is
+
+```json
+{
+  "pull_request": {
+    "pullRequestCount": "34 pull requests",
+    "externalPullRequestCount": "6 pull requests",
+    "additionsAverage": "618 lines",
+    "additionsMedian": "115 lines",
+    "deletionsAverage": "1328 lines",
+    "deletionsMedian": "25 lines",
+    "leadTimeAverage": "5 days, 13 hours, 16 minutes, 12 seconds",
+    "leadTimeMedian": "3 days, 5 hours, 50 minutes, 15 seconds",
+    "timeToMergeAverage": "4 days, 22 hours, 51 minutes, 14 seconds",
+    "timeToMergeMedian": "2 days, 7 hours, 17 minutes, 5 seconds",
+    "timeToMergeFromFirstReviewAverage": "3 days, 4 hours, 58 minutes, 49 seconds",
+    "timeToMergeFromFirstReviewMedian": "1 day, 7 hours, 14 minutes, 14 seconds",
+    "responseTimeAverage": "2 days, 12 hours, 55 minutes, 59 seconds"
+  }
+}
+```
+
+* leadTime: diff between a first commit and a PullRequest merged date
+* timeToMerge: diff between a PullRequest created and a PullRequest merged
+* timeToMergeFromFirstReview: diff between a first review and a PullRequest merged.
 
 If you want to know about leadTime and timeToMerge for details, See <https://sourcelevel.io/blog/5-metrics-engineering-managers-can-extract-from-pull-requests>
 
@@ -63,7 +91,6 @@ If you want to know about leadTime and timeToMerge for details, See <https://sou
 first commit    create PullRequest    first review        PullRequest merged
 ```
 
-### log command
+#### log command
 
-If you want to get raw information about PullRequests, you can use `log` command.
-Use the `--format` option if you need other formats (ex. csv).
+If you want to get raw information about PullRequests, you can use `ga pr log` command.
