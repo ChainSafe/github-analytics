@@ -1,9 +1,8 @@
 import fs from "fs";
-import { Issue, PullRequest } from "./entity";
-import { median as _median } from "mathjs";
-import { fetchAllIssues, fetchAllPullRequests } from "./github";
 import humanDuration from "humanize-duration";
-import parseISO from "date-fns/parseISO";
+import { median as _median } from "mathjs";
+import { PullRequest } from "../entity";
+import { fetchAllPullRequests } from "../github";
 
 interface StatCommandOptions {
   input: string | undefined;
@@ -13,19 +12,17 @@ interface StatCommandOptions {
 }
 export async function statCommand(options: StatCommandOptions): Promise<void> {
   let prs: PullRequest[] = [];
-  let issues: Issue[] = [];
 
   if (options.query) {
     prs = await fetchAllPullRequests(options.query, options.start, options.end);
-    issues = await fetchAllIssues(options.query, options.start, options.end);
   } else if (options.input) {
-    ({ prs, issues } = createPullRequestsByLog(options.input));
+    prs = createPullRequestsByLog(options.input);
   } else {
     console.error("You must specify either --query or --input");
     process.exit(1);
   }
 
-  process.stdout.write(JSON.stringify(createStat(prs, issues), undefined, 2));
+  process.stdout.write(JSON.stringify(createStat(prs), undefined, 2));
 }
 
 interface GithubAnalytics {
@@ -45,17 +42,8 @@ interface GithubAnalytics {
     responseTimeAverage: string;
     responseTimeMedian: string;
   };
-  issues: {
-    issueCount: string;
-    externalIssueCount: string;
-    closedIssueCount: string;
-    responseTimeAverage: string;
-    responseTimeMedian: string;
-    timeToCloseAverage: string;
-    timeToCloseMedian: string;
-  };
 }
-export function createStat(prs: PullRequest[], issues: Issue[]): GithubAnalytics {
+export function createStat(prs: PullRequest[]): GithubAnalytics {
   const mergedPrs = prs.filter((pr) => pr.mergedAt != undefined);
   const leadTimes = mergedPrs.map((pr) => pr.leadTimeSeconds);
   const timeToMerges = mergedPrs.map((pr) => pr.timeToMergeSeconds);
@@ -63,30 +51,7 @@ export function createStat(prs: PullRequest[], issues: Issue[]): GithubAnalytics
     .map((pr) => pr.timeToMergeFromFirstReviewSeconds)
     .filter((x): x is number => x !== undefined);
   const prResponseTime = prs.map((pr) => pr.responseTimeSeconds).filter((x): x is number => x !== undefined);
-
-  const closedIssues = issues.filter((i) => i.closedAt != undefined);
-  const issueResponseTimes = issues.map((i) => {
-    const comment = i.comments[0];
-    if (comment) {
-      return parseISO(comment.createdAt).getTime() - parseISO(i.createdAt).getTime();
-    } else {
-      return new Date().getTime() - parseISO(i.createdAt).getTime();
-    }
-  });
-  const closeTimes = closedIssues.map((i) => {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return parseISO(i.closedAt!).getTime() - parseISO(i.createdAt).getTime();
-  });
   return {
-    issues: {
-      issueCount: issues.length + " issues",
-      externalIssueCount: issues.length + " issues",
-      closedIssueCount: closedIssues.length + " issues",
-      responseTimeAverage: humanDuration(average(issueResponseTimes)),
-      responseTimeMedian: humanDuration(median(issueResponseTimes)),
-      timeToCloseAverage: humanDuration(average(closeTimes)),
-      timeToCloseMedian: humanDuration(median(closeTimes)),
-    },
     pull_request: {
       pullRequestCount: prs.length + " pull requests",
       externalPullRequestCount: prs.length + " pull requests",
@@ -116,23 +81,21 @@ function median(numbers: number[]): number {
   return _median(numbers);
 }
 
-export function createPullRequestsByLog(path: string): { issues: Issue[]; prs: PullRequest[] } {
+export function createPullRequestsByLog(path: string): PullRequest[] {
   const logs = JSON.parse(fs.readFileSync(path, "utf8"));
-  return {
-    issues: logs.issues.map((i: any) => new Issue(i.title, i.author, i.url, i.createdAt, i.closedAt, i.comments)),
-    prs: logs.prs.map(
-      (p: any) =>
-        new PullRequest(
-          p.title,
-          p.author,
-          p.url,
-          p.createdAt,
-          p.mergedAt,
-          p.additions,
-          p.deletions,
-          p.authoredDate,
-          p.reviews
-        )
-    ),
-  };
+
+  return logs.map(
+    (p: any) =>
+      new PullRequest(
+        p.title,
+        p.author,
+        p.url,
+        p.createdAt,
+        p.mergedAt,
+        p.additions,
+        p.deletions,
+        p.authoredDate,
+        p.reviews
+      )
+  );
 }
