@@ -1,7 +1,3 @@
-## [v0.3.1](https://github.com/shibayu36/merged-pr-stat/compare/v0.3.0...v0.3.1) (2022-03-14)
-
-* Update author is nullable [#12](https://github.com/shibayu36/merged-pr-stat/pull/12) ([isanasan](https://github.com/isanasan))
-
 ## 1.0.0 (2023-02-06)
 
 
