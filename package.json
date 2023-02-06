@@ -1,7 +1,7 @@
 {
   "name": "@chainsafe/github-analytics",
   "description": "A tool to create Github issues and pull request analytics",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0-rc.2",
   "contributors": [
     "shibayu36<shibayu36@gmail.com>",
     "Marin Petrunic<marin@chainsafe.io>"
@@ -42,12 +42,12 @@
     "bin",
     "dist"
   ],
-  "homepage": "https://github.com/shibayu36/merged-pr-stat#readme",
+  "homepage": "https://github.com/chainsafe/github-analytics#readme",
   "license": "MIT",
   "main": "dist/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shibayu36/merged-pr-stat.git"
+    "url": "https://github.com/chainsafe/github-analytics.git"
   },
   "scripts": {
     "build": "tsc",
