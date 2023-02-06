@@ -1,7 +1,7 @@
 {
   "name": "@chainsafe/github-analytics",
   "description": "A tool to create Github issues and pull request analytics",
-  "version": "1.0.0",
+  "version": "1.0.0-rc.1",
   "contributors": [
     "shibayu36<shibayu36@gmail.com>",
     "Marin Petrunic<marin@chainsafe.io>"
