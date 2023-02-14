@@ -7,6 +7,9 @@ on:
 permissions:
   contents: write
   discussions: write
+  deployments: write
+  pull-requests: write
+  statuses: write
 
 jobs:
   maybe-release:
