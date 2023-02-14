@@ -1,0 +1,6 @@
+FROM public.ecr.aws/lambda/python:3.9
+
+# Copy function code
+COPY ../.binaries/ga-linux-16 .
+
+ENTRYPOINT [ "./ga-linux-16" ]

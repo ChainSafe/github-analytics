@@ -3,6 +3,11 @@ on:
   push:
     branches:
       - master
+
+permissions:
+  contents: write
+  discussions: write
+
 jobs:
   maybe-release:
     name: release
@@ -31,6 +36,19 @@ jobs:
       
       - run: yarn build
         if: ${{ steps.release.outputs.release_created }}
+
+      - run: yarn package
+        if: ${{ steps.release.outputs.release_created }}
+
+      - run: yarn package
+        if: ${{ steps.release.outputs.release_created }}
+
+      - name: Upload release asset
+        if: ${{ steps.release.outputs.release_created }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.release.outputs.tag_name }}
+          files: .binaries/*
 
       - run: yarn publish --access public
         env:
