@@ -10,6 +10,13 @@
 
 * use octokit ([9f82fbe](https://github.com/ChainSafe/github-analytics/commit/9f82fbeee74749bff55871af2fc217bfbb9b0bd8))
 
+## [1.2.0](https://github.com/ChainSafe/github-analytics/compare/v1.1.0...v1.2.0) (2023-02-14)
+
+
+### Features
+
+* ability to output raw data ([8990948](https://github.com/ChainSafe/github-analytics/commit/89909484d08edecc1578254ac30f98fc9fdfd65e))
+
 ## [1.1.0](https://github.com/ChainSafe/github-analytics/compare/v1.0.0...v1.1.0) (2023-02-14)
 
 
