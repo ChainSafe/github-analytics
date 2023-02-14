@@ -10,6 +10,7 @@ async function main(): Promise<void> {
   const pr = program.command("pr");
 
   pr.command("stat", { isDefault: true })
+    .option("--human", "Display values in human friendly format", false)
     .option("--input <filepath>", "Location of file with raw data")
     .option("--start <date>", "Filters by date created. Format YYYY-MM-DD")
     .option("--end <date>", "Filters by date created. Format YYYY-MM-DD")
@@ -49,6 +50,7 @@ async function main(): Promise<void> {
 
   issues
     .command("stat", { isDefault: true })
+    .option("--human", "Display values in human friendly format", false)
     .option("--input <filepath>", "Location of file with raw data")
     .option("--start <date>", "Filters by date created. Format YYYY-MM-DD")
     .option("--end <date>", "Filters by date created. Format YYYY-MM-DD")

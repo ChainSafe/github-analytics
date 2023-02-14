@@ -9,6 +9,7 @@ import { fetchAllPullRequests } from "../github";
 import { isBot, isTeamMember } from "../util";
 
 interface StatCommandOptions {
+  human: boolean | undefined;
   input: string | undefined;
   start: string | undefined;
   end: string | undefined;
@@ -29,7 +30,7 @@ export async function statCommand(options: StatCommandOptions): Promise<void> {
   const teamMembers: string[] =
     options.teamMembers?.toLowerCase().split(",") ?? [];
   process.stdout.write(
-    JSON.stringify(createStat(prs, teamMembers), undefined, 2)
+    JSON.stringify(createStat(prs, teamMembers, options.human ?? false), undefined, 2)
   );
 }
 
@@ -52,7 +53,8 @@ interface GithubAnalytics {
 }
 export function createStat(
   prs: PullRequest[],
-  teamMembers: string[]
+  teamMembers: string[],
+  human: boolean
 ): GithubAnalytics {
   prs = prs.filter((pr) => !isBot(pr.author));
   const externalPullRequests = prs.filter(
@@ -82,37 +84,71 @@ export function createStat(
         : undefined;
     })
     .filter((x): x is number => x !== undefined);
-  return {
-    pull_request: {
-      pullRequestCount: String(prs.length) + " pull requests",
-      externalPullRequestCount:
-        String(externalPullRequests.length) + " pull requests",
-      additionsAverage:
-        String(Math.round(average(prs.map((pr) => pr.additions)))) + " lines",
-      additionsMedian:
-        Math.round(median(prs.map((pr) => pr.additions))).toString() + " lines",
-      deletionsAverage:
-        Math.round(average(prs.map((pr) => pr.deletions))).toString() +
-        " lines",
-      deletionsMedian:
-        Math.round(median(prs.map((pr) => pr.deletions))).toString() + " lines",
-      leadTimeAverage: humanDuration(Math.floor(average(leadTimes)) * 1000),
-      leadTimeMedian: humanDuration(Math.floor(median(leadTimes)) * 1000),
-      timeToMergeAverage: humanDuration(
-        Math.floor(average(timeToMerges)) * 1000
-      ),
-      timeToMergeMedian: humanDuration(Math.floor(median(timeToMerges)) * 1000),
-      timeToMergeFromFirstReviewAverage: humanDuration(
-        Math.floor(average(timeToMergeFromFirstReviews)) * 1000
-      ),
-      timeToMergeFromFirstReviewMedian: humanDuration(
-        Math.floor(median(timeToMergeFromFirstReviews)) * 1000
-      ),
-      responseTimeAverage: humanDuration(
-        Math.floor(average(prResponseTime)) * 1000
-      ),
-    },
-  };
+
+    if(human) {
+      return {
+        pull_request: {
+          pullRequestCount: String(prs.length) + " pull requests",
+          externalPullRequestCount:
+            String(externalPullRequests.length) + " pull requests",
+          additionsAverage:
+            String(Math.round(average(prs.map((pr) => pr.additions)))) + " lines",
+          additionsMedian:
+            Math.round(median(prs.map((pr) => pr.additions))).toString() + " lines",
+          deletionsAverage:
+            Math.round(average(prs.map((pr) => pr.deletions))).toString() +
+            " lines",
+          deletionsMedian:
+            Math.round(median(prs.map((pr) => pr.deletions))).toString() + " lines",
+          leadTimeAverage: humanDuration(Math.floor(average(leadTimes)) * 1000),
+          leadTimeMedian: humanDuration(Math.floor(median(leadTimes)) * 1000),
+          timeToMergeAverage: humanDuration(
+            Math.floor(average(timeToMerges)) * 1000
+          ),
+          timeToMergeMedian: humanDuration(Math.floor(median(timeToMerges)) * 1000),
+          timeToMergeFromFirstReviewAverage: humanDuration(
+            Math.floor(average(timeToMergeFromFirstReviews)) * 1000
+          ),
+          timeToMergeFromFirstReviewMedian: humanDuration(
+            Math.floor(median(timeToMergeFromFirstReviews)) * 1000
+          ),
+          responseTimeAverage: humanDuration(
+            Math.floor(average(prResponseTime)) * 1000
+          ),
+        },
+      };
+    } else {
+      return {
+        pull_request: {
+          pullRequestCount: String(prs.length),
+          externalPullRequestCount:
+            String(externalPullRequests.length),
+          additionsAverage:
+            String(Math.round(average(prs.map((pr) => pr.additions)))),
+          additionsMedian:
+            Math.round(median(prs.map((pr) => pr.additions))).toString(),
+          deletionsAverage:
+            Math.round(average(prs.map((pr) => pr.deletions))).toString(),
+          deletionsMedian:
+            Math.round(median(prs.map((pr) => pr.deletions))).toString(),
+          leadTimeAverage: String(Math.floor(average(leadTimes))),
+          leadTimeMedian: String(Math.floor(median(leadTimes))),
+          timeToMergeAverage: String(
+            Math.floor(average(timeToMerges))
+          ),
+          timeToMergeMedian: String(Math.floor(median(timeToMerges))),
+          timeToMergeFromFirstReviewAverage: String(
+            Math.floor(average(timeToMergeFromFirstReviews))
+          ),
+          timeToMergeFromFirstReviewMedian: String(
+            Math.floor(median(timeToMergeFromFirstReviews))
+          ),
+          responseTimeAverage: String(
+            Math.floor(average(prResponseTime))
+          ),
+        },
+      };
+    }
 }
 
 function average(numbers: number[]): number {

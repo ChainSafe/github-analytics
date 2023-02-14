@@ -22,7 +22,7 @@ To use this tool, you will need to obtain Github Personal Access Token (PAT) whi
 The following command aggregates Issues of web3.js and web3.js-chainlink-plugin which merged between `--start` and `--end`.  You can additionally filter Issues by the `--query` option.  See also <https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests> if you want to know what you can specify for `--query`
 
 ```bash
-GITHUB_TOKEN=... ga issues stat --start="2023-01-01T00:00:00" --end="2023-02-01" --query="repo:web3/web3.js repo:chainsafe/web3.js-plugin-chainlink" --teamMembers=avkos,jdevcs,luu-alex,mconnelly8,Muhammad-Altabba,nikoulai,spacesailor24
+GITHUB_TOKEN=... ga issues stat --start="2023-01-01T00:00:00" --end="2023-02-01" --query="repo:web3/web3.js repo:chainsafe/web3.js-plugin-chainlink" --teamMembers=avkos,jdevcs,luu-alex,mconnelly8,Muhammad-Altabba,nikoulai,spacesailor24 --human
 ```
 
 output is
@@ -53,7 +53,7 @@ If you want to get raw information about PullRequests, you can use a `pr log` co
 The following command aggregates PullRequests of web3.js and web3.js-chainlink-plugin which merged between `--start` and `--end`.  You can additionally filter PullRequests by the `--query` option.  See also <https://docs.github.com/en/github/searching-for-information-on-github/searching-issues-and-pull-requests> if you want to know what you can specify for `--query`
 
 ```bash
-GITHUB_TOKEN=... ga pr stat --start="2023-01-01T00:00:00" --end="2023-02-01" --query="repo:web3/web3.js repo:chainsafe/web3.js-plugin-chainlink" --teamMembers=avkos,jdevcs,luu-alex,mconnelly8,Muhammad-Altabba,nikoulai,spacesailor24
+GITHUB_TOKEN=... ga pr stat --start="2023-01-01T00:00:00" --end="2023-02-01" --query="repo:web3/web3.js repo:chainsafe/web3.js-plugin-chainlink" --teamMembers=avkos,jdevcs,luu-alex,mconnelly8,Muhammad-Altabba,nikoulai,spacesailor24 --human
 ```
 
 output is
