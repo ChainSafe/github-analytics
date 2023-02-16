@@ -10,6 +10,13 @@
 
 * use octokit ([9f82fbe](https://github.com/ChainSafe/github-analytics/commit/9f82fbeee74749bff55871af2fc217bfbb9b0bd8))
 
+## [1.2.1](https://github.com/ChainSafe/github-analytics/compare/v1.2.0...v1.2.1) (2023-02-16)
+
+
+### Bug Fixes
+
+* add more bots, filter empty prs, lint ([4dab896](https://github.com/ChainSafe/github-analytics/commit/4dab89699f6679a2a0fca3cf499a57eb650307e3))
+
 ## [1.2.0](https://github.com/ChainSafe/github-analytics/compare/v1.1.0...v1.2.0) (2023-02-14)
 
 
