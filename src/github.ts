@@ -135,7 +135,8 @@ async function fetchAllPullRequestsByQuery(
       response.search.nodes
         //removed closed but not merged prs
         .filter(
-          (p: PullRequestNode) => !(p.closed === true && p.mergedAt == null)
+          (p: PullRequestNode) =>
+            !(p.closed === true && p.mergedAt == null) && p.commits.nodes.length > 0
         )
         .map((p: PullRequestNode) => {
           return new PullRequest(

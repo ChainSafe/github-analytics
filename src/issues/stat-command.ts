@@ -29,7 +29,11 @@ export async function statCommand(options: StatCommandOptions): Promise<void> {
   const teamMembers: string[] =
     options.teamMembers?.toLowerCase().split(",") ?? [];
   process.stdout.write(
-    JSON.stringify(createStat(issues, teamMembers, options.human ?? false), undefined, 2)
+    JSON.stringify(
+      createStat(issues, teamMembers, options.human ?? false),
+      undefined,
+      2
+    )
   );
 }
 
@@ -68,7 +72,7 @@ export function createStat(
   const closeTimes = closedIssues.map((i) => {
     return moment(i.closedAt).diff(moment(i.createdAt), "milliseconds");
   });
-  if(human) {
+  if (human) {
     return {
       issues: {
         issueCount: String(issues.length) + " issues",
